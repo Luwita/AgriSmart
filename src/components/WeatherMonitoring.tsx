@@ -161,7 +161,7 @@ const WeatherMonitoring: React.FC = () => {
       id: 2,
       type: 'info',
       title: 'Optimal Spraying Conditions - Central Regions',
-      message: 'Low wind conditions (< 10 km/h) expected in Central and Eastern provinces. Ideal for pesticide application.',
+      message: 'Low wind conditions (&lt; 10 km/h) expected in Central and Eastern provinces. Ideal for pesticide application.',
       time: '4 hours ago',
       severity: 'low',
       provinces: ['Central Province', 'Eastern Province', 'Lusaka Province']
