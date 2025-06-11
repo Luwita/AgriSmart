@@ -41,7 +41,8 @@ import {
   ExternalLink,
   Download,
   Bell,
-  QrCode
+  QrCode,
+  DollarSign
 } from 'lucide-react';
 
 const CommunityForum: React.FC = () => {
