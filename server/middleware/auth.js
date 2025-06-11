@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/User.js';
+import { JWT_SECRET } from '../config/jwt.js';
 
 export const auth = async (req, res, next) => {
   try {
@@ -9,7 +10,7 @@ export const auth = async (req, res, next) => {
       return res.status(401).json({ message: 'Access denied. No token provided.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'agrismart_secret_key');
+    const decoded = jwt.verify(token, JWT_SECRET);
     req.userId = decoded.userId;
     
     // Get user info for role-based access
@@ -28,6 +29,20 @@ export const auth = async (req, res, next) => {
 export const adminAuth = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied. Admin privileges required.' });
+  }
+  next();
+};
+
+export const extensionOfficerAuth = (req, res, next) => {
+  if (!['admin', 'extension_officer'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Access denied. Extension officer privileges required.' });
+  }
+  next();
+};
+
+export const farmerAuth = (req, res, next) => {
+  if (!['admin', 'extension_officer', 'farmer'].includes(req.user.role)) {
+    return res.status(403).json({ message: 'Access denied. Farmer privileges required.' });
   }
   next();
 };

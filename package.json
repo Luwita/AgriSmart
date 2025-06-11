@@ -1,14 +1,15 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "agrismart-platform",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run server\" \"vite\"",
     "server": "nodemon server/index.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "seed": "node server/data/seedData.js"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
@@ -17,7 +18,15 @@
     "react-router-dom": "^6.20.1",
     "recharts": "^2.8.0",
     "date-fns": "^2.30.0",
-    "axios": "^1.6.2"
+    "axios": "^1.6.2",
+    "express": "^4.18.2",
+    "mongoose": "^8.0.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "express-validator": "^7.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
@@ -34,13 +43,6 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2",
-    "express": "^4.18.2",
-    "mongoose": "^8.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
-    "multer": "^1.4.5-lts.1",
     "nodemon": "^3.0.2",
     "concurrently": "^8.2.2"
   }
