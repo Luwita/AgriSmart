@@ -1,499 +1,317 @@
-import React, { useState } from 'react';
-import { Users, Settings, BarChart3, Shield, Database, Bell, Globe, DollarSign, TrendingUp, AlertTriangle, CheckCircle, Clock, Eye, Edit, Trash2, Plus, Search, Filter, Download, Upload, X, Save, RefreshCw, Mail, Phone, MapPin, Calendar, Star, Award, Building, Sprout, Activity, FileText, Lock, Unlock, Ban, UserCheck, MessageSquare, Zap, Server, HardDrive, Wifi, Monitor, Cpu, MemoryStick, Network, Bug, PenTool as Tool, Target, Lightbulb, BookOpen, Video, Image, Link, Share2, Heart, ThumbsUp, Flag, Archive, Bookmark } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, AreaChart, Area } from 'recharts';
+import React, { useState, useEffect } from 'react';
+import { 
+  Users, 
+  Building, 
+  Sprout, 
+  TrendingUp, 
+  AlertTriangle,
+  CheckCircle,
+  BarChart3,
+  Settings,
+  Shield,
+  Database,
+  Activity,
+  Globe,
+  MessageCircle,
+  Package,
+  Cpu,
+  DollarSign,
+  Calendar,
+  Search,
+  Filter,
+  Download,
+  Eye,
+  Edit,
+  Trash2,
+  Plus,
+  RefreshCw,
+  MapPin,
+  Star,
+  Clock,
+  Award,
+  Target,
+  Zap
+} from 'lucide-react';
+import { adminAPI } from '../services/api';
 
 const AdminDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [selectedTimeframe, setSelectedTimeframe] = useState('30days');
-  const [showUserModal, setShowUserModal] = useState(false);
-  const [showContentModal, setShowContentModal] = useState(false);
-  const [showSystemModal, setShowSystemModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
-  const [userFilter, setUserFilter] = useState('all');
-  const [contentFilter, setContentFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<any>(null);
+  const [users, setUsers] = useState<any[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [userFilters, setUserFilters] = useState({
+    role: 'all',
+    province: 'all',
+    status: 'all'
+  });
 
-  // Admin Overview Statistics
-  const adminStats = {
-    totalUsers: 1247,
-    activeUsers: 892,
-    newUsersToday: 23,
-    totalFarms: 1156,
-    totalRevenue: 125600,
-    monthlyGrowth: 18.5,
-    systemUptime: 99.8,
-    supportTickets: 45,
-    contentItems: 2341,
-    storageUsed: 78.5
-  };
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
-  // User Management Data
-  const users = [
-    {
-      id: 1,
-      name: 'James Mwanza',
-      email: 'james.mwanza@email.com',
-      phone: '+260 977 123 456',
-      role: 'farmer',
-      province: 'Lusaka Province',
-      farmSize: '25 hectares',
-      joinDate: '2024-01-15',
-      lastActive: '2 hours ago',
-      status: 'active',
-      subscription: 'basic',
-      totalPosts: 23,
-      reputation: 245,
-      verified: true,
-      revenue: 4500
-    },
-    {
-      id: 2,
-      name: 'Mary Banda',
-      email: 'mary.banda@email.com',
-      phone: '+260 966 234 567',
-      role: 'farmer',
-      province: 'Central Province',
-      farmSize: '45 hectares',
-      joinDate: '2023-08-20',
-      lastActive: '1 day ago',
-      status: 'active',
-      subscription: 'premium',
-      totalPosts: 67,
-      reputation: 456,
-      verified: true,
-      revenue: 8900
-    },
-    {
-      id: 3,
-      name: 'Dr. Michael Chisanga',
-      email: 'dr.chisanga@agriculture.gov.zm',
-      phone: '+260 955 345 678',
-      role: 'extension_officer',
-      province: 'Multiple',
-      farmSize: 'N/A',
-      joinDate: '2023-05-10',
-      lastActive: '30 minutes ago',
-      status: 'active',
-      subscription: 'free',
-      totalPosts: 156,
-      reputation: 1250,
-      verified: true,
-      revenue: 0
-    },
-    {
-      id: 4,
-      name: 'Peter Mulenga',
-      email: 'peter.mulenga@email.com',
-      phone: '+260 979 456 789',
-      role: 'farmer',
-      province: 'Eastern Province',
-      farmSize: '15 hectares',
-      joinDate: '2024-03-22',
-      lastActive: '1 week ago',
-      status: 'inactive',
-      subscription: 'free',
-      totalPosts: 8,
-      reputation: 89,
-      verified: false,
-      revenue: 1200
-    },
-    {
-      id: 5,
-      name: 'Grace Tembo',
-      email: 'grace.tembo@znfu.org.zm',
-      phone: '+260 966 567 890',
-      role: 'cooperative',
-      province: 'Southern Province',
-      farmSize: '200 hectares',
-      joinDate: '2023-11-05',
-      lastActive: '3 hours ago',
-      status: 'active',
-      subscription: 'premium',
-      totalPosts: 89,
-      reputation: 678,
-      verified: true,
-      revenue: 15600
-    }
-  ];
+  const loadDashboardData = async () => {
+    try {
+      setLoading(true);
+      
+      // For demo purposes, use mock data if API is not available
+      const mockStats = {
+        users: {
+          total: 1247,
+          farmers: 1089,
+          extensionOfficers: 45,
+          cooperatives: 23,
+          newThisMonth: 156
+        },
+        farms: {
+          total: 892,
+          totalArea: 45678,
+          byProvince: [
+            { _id: 'Lusaka Province', count: 234, totalArea: 12456 },
+            { _id: 'Central Province', count: 189, totalArea: 9876 },
+            { _id: 'Eastern Province', count: 156, totalArea: 8234 },
+            { _id: 'Copperbelt Province', count: 134, totalArea: 7123 },
+            { _id: 'Southern Province', count: 179, totalArea: 7989 }
+          ]
+        },
+        crops: {
+          total: 2456,
+          byCrop: [
+            { _id: 'Maize', count: 1234, totalArea: 23456 },
+            { _id: 'Soybeans', count: 567, totalArea: 8901 },
+            { _id: 'Groundnuts', count: 345, totalArea: 4567 },
+            { _id: 'Sunflower', count: 234, totalArea: 3456 },
+            { _id: 'Cotton', count: 76, totalArea: 1234 }
+          ],
+          totalYield: 156789
+        },
+        iot: {
+          total: 456,
+          online: 389,
+          byType: [
+            { _id: 'Soil Monitor', count: 156 },
+            { _id: 'Weather Monitor', count: 89 },
+            { _id: 'Irrigation System', count: 67 },
+            { _id: 'Pest Monitor', count: 45 },
+            { _id: 'Aerial Monitor', count: 23 }
+          ]
+        },
+        community: {
+          totalPosts: 2345,
+          totalReplies: 5678,
+          activeUsers: 456
+        },
+        inventory: {
+          totalItems: 12456,
+          totalValue: 2345678,
+          lowStock: 234
+        }
+      };
 
-  // Content Management Data
-  const contentItems = [
-    {
-      id: 1,
-      title: 'Sustainable Maize Farming in Zambia',
-      type: 'video',
-      author: 'Dr. James Mwanza',
-      category: 'crops',
-      status: 'published',
-      views: 12500,
-      likes: 456,
-      comments: 89,
-      createdDate: '2024-11-15',
-      lastModified: '2024-12-01',
-      language: 'English/Bemba',
-      duration: '15:30',
-      featured: true
-    },
-    {
-      id: 2,
-      title: 'Fall Armyworm Control Methods',
-      type: 'article',
-      author: 'Mary Banda',
-      category: 'pest_management',
-      status: 'published',
-      views: 8900,
-      likes: 234,
-      comments: 67,
-      createdDate: '2024-12-10',
-      lastModified: '2024-12-12',
-      language: 'English',
-      duration: 'N/A',
-      featured: false
-    },
-    {
-      id: 3,
-      title: 'Organic Farming Certification Guide',
-      type: 'guide',
-      author: 'AgriSmart Team',
-      category: 'sustainability',
-      status: 'draft',
-      views: 0,
-      likes: 0,
-      comments: 0,
-      createdDate: '2024-12-14',
-      lastModified: '2024-12-15',
-      language: 'English/Nyanja',
-      duration: 'N/A',
-      featured: false
-    },
-    {
-      id: 4,
-      title: 'Water Conservation Techniques',
-      type: 'video',
-      author: 'Peter Mulenga',
-      category: 'water_management',
-      status: 'review',
-      views: 0,
-      likes: 0,
-      comments: 0,
-      createdDate: '2024-12-13',
-      lastModified: '2024-12-14',
-      language: 'English/Tonga',
-      duration: '12:45',
-      featured: false
-    }
-  ];
+      const mockUsers = [
+        {
+          _id: '1',
+          name: 'James Mwanza',
+          email: 'james@example.com',
+          role: 'farmer',
+          farmProfile: {
+            location: 'Chongwe',
+            province: 'Lusaka Province',
+            totalArea: 25
+          },
+          stats: {
+            reputation: 245,
+            postsCreated: 23
+          },
+          isActive: true,
+          createdAt: '2024-01-15',
+          lastLogin: '2024-12-15'
+        },
+        {
+          _id: '2',
+          name: 'Mary Banda',
+          email: 'mary@example.com',
+          role: 'extension_officer',
+          farmProfile: {
+            location: 'Lusaka',
+            province: 'Lusaka Province'
+          },
+          stats: {
+            reputation: 567,
+            postsCreated: 89
+          },
+          isActive: true,
+          createdAt: '2023-08-20',
+          lastLogin: '2024-12-14'
+        }
+      ];
 
-  // System Analytics Data
-  const userGrowthData = [
-    { month: 'Jul', users: 856, active: 645, revenue: 89500 },
-    { month: 'Aug', users: 923, active: 698, revenue: 95200 },
-    { month: 'Sep', users: 987, active: 742, revenue: 102300 },
-    { month: 'Oct', users: 1045, active: 789, revenue: 108900 },
-    { month: 'Nov', users: 1156, active: 834, revenue: 118700 },
-    { month: 'Dec', users: 1247, active: 892, revenue: 125600 }
-  ];
-
-  const subscriptionData = [
-    { name: 'Free', value: 756, color: '#6B7280' },
-    { name: 'Basic', value: 345, color: '#3B82F6' },
-    { name: 'Premium', value: 146, color: '#10B981' }
-  ];
-
-  const provinceData = [
-    { province: 'Lusaka', users: 234, farms: 198 },
-    { province: 'Central', users: 189, farms: 167 },
-    { province: 'Copperbelt', users: 156, farms: 134 },
-    { province: 'Eastern', users: 145, farms: 128 },
-    { province: 'Southern', users: 134, farms: 119 },
-    { province: 'Northern', users: 98, farms: 87 },
-    { province: 'Western', users: 87, farms: 76 },
-    { province: 'Luapula', users: 76, farms: 65 },
-    { province: 'Muchinga', users: 67, farms: 58 },
-    { province: 'North-Western', users: 61, farms: 54 }
-  ];
-
-  // System Health Data
-  const systemMetrics = {
-    serverUptime: 99.8,
-    responseTime: 245, // ms
-    errorRate: 0.02,
-    activeConnections: 1456,
-    cpuUsage: 34.5,
-    memoryUsage: 67.8,
-    diskUsage: 78.5,
-    networkTraffic: 2.3, // GB/hour
-    databaseSize: 15.6, // GB
-    backupStatus: 'completed',
-    lastBackup: '2024-12-15 02:00:00'
-  };
-
-  // Support Tickets
-  const supportTickets = [
-    {
-      id: 1,
-      title: 'Cannot access weather data',
-      user: 'James Mwanza',
-      priority: 'high',
-      status: 'open',
-      category: 'technical',
-      created: '2024-12-15 09:30',
-      lastUpdate: '2024-12-15 14:20'
-    },
-    {
-      id: 2,
-      title: 'Payment processing issue',
-      user: 'Mary Banda',
-      priority: 'urgent',
-      status: 'in_progress',
-      category: 'billing',
-      created: '2024-12-15 11:15',
-      lastUpdate: '2024-12-15 15:45'
-    },
-    {
-      id: 3,
-      title: 'Feature request: Crop calendar',
-      user: 'Peter Mulenga',
-      priority: 'low',
-      status: 'open',
-      category: 'feature',
-      created: '2024-12-14 16:20',
-      lastUpdate: '2024-12-14 16:20'
-    }
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active': return 'text-emerald-600 bg-emerald-100';
-      case 'inactive': return 'text-red-600 bg-red-100';
-      case 'suspended': return 'text-yellow-600 bg-yellow-100';
-      case 'published': return 'text-emerald-600 bg-emerald-100';
-      case 'draft': return 'text-gray-600 bg-gray-100';
-      case 'review': return 'text-yellow-600 bg-yellow-100';
-      case 'open': return 'text-blue-600 bg-blue-100';
-      case 'in_progress': return 'text-yellow-600 bg-yellow-100';
-      case 'closed': return 'text-gray-600 bg-gray-100';
-      default: return 'text-gray-600 bg-gray-100';
+      setStats(mockStats);
+      setUsers(mockUsers);
+      
+      // Try to load real data if API is available
+      try {
+        const dashboardResponse = await adminAPI.getDashboard();
+        setStats(dashboardResponse.data.stats);
+        
+        const usersResponse = await adminAPI.getUsers();
+        setUsers(usersResponse.data.users);
+      } catch (apiError) {
+        console.log('Using mock data - API not available');
+      }
+      
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const getPriorityColor = (priority: string) => {
-    switch (priority) {
-      case 'urgent': return 'text-red-600 bg-red-100';
-      case 'high': return 'text-orange-600 bg-orange-100';
-      case 'medium': return 'text-yellow-600 bg-yellow-100';
-      case 'low': return 'text-green-600 bg-green-100';
-      default: return 'text-gray-600 bg-gray-100';
-    }
-  };
-
-  const getSubscriptionColor = (subscription: string) => {
-    switch (subscription) {
-      case 'free': return 'text-gray-600 bg-gray-100';
-      case 'basic': return 'text-blue-600 bg-blue-100';
-      case 'premium': return 'text-emerald-600 bg-emerald-100';
-      default: return 'text-gray-600 bg-gray-100';
+  const handleUserAction = async (userId: string, action: string) => {
+    try {
+      switch (action) {
+        case 'deactivate':
+          await adminAPI.deactivateUser(userId);
+          break;
+        case 'activate':
+          await adminAPI.updateUser(userId, { isActive: true });
+          break;
+      }
+      loadDashboardData();
+    } catch (error) {
+      console.error('Error performing user action:', error);
     }
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesFilter = userFilter === 'all' || user.role === userFilter || user.status === userFilter;
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.province.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
+                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesRole = userFilters.role === 'all' || user.role === userFilters.role;
+    const matchesProvince = userFilters.province === 'all' || 
+                           user.farmProfile?.province === userFilters.province;
+    const matchesStatus = userFilters.status === 'all' || 
+                         (userFilters.status === 'active' ? user.isActive : !user.isActive);
+    
+    return matchesSearch && matchesRole && matchesProvince && matchesStatus;
   });
 
-  const filteredContent = contentItems.filter(item => {
-    const matchesFilter = contentFilter === 'all' || item.type === contentFilter || item.status === contentFilter;
-    const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         item.author.toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesFilter && matchesSearch;
-  });
-
-  const handleUserAction = (action: string, userId: number) => {
-    const user = users.find(u => u.id === userId);
-    if (user) {
-      switch (action) {
-        case 'view':
-          setSelectedUser(user);
-          setShowUserModal(true);
-          break;
-        case 'suspend':
-          alert(`User ${user.name} has been suspended`);
-          break;
-        case 'activate':
-          alert(`User ${user.name} has been activated`);
-          break;
-        case 'delete':
-          if (confirm(`Are you sure you want to delete user ${user.name}?`)) {
-            alert(`User ${user.name} has been deleted`);
-          }
-          break;
-        case 'message':
-          alert(`Opening message composer for ${user.name}`);
-          break;
-      }
-    }
-  };
-
-  const handleContentAction = (action: string, contentId: number) => {
-    const content = contentItems.find(c => c.id === contentId);
-    if (content) {
-      switch (action) {
-        case 'publish':
-          alert(`Content "${content.title}" has been published`);
-          break;
-        case 'unpublish':
-          alert(`Content "${content.title}" has been unpublished`);
-          break;
-        case 'feature':
-          alert(`Content "${content.title}" has been featured`);
-          break;
-        case 'delete':
-          if (confirm(`Are you sure you want to delete "${content.title}"?`)) {
-            alert(`Content "${content.title}" has been deleted`);
-          }
-          break;
-      }
-    }
-  };
-
-  const handleSystemAction = (action: string) => {
-    switch (action) {
-      case 'backup':
-        alert('System backup initiated');
-        break;
-      case 'maintenance':
-        setShowSystemModal(true);
-        break;
-      case 'restart':
-        if (confirm('Are you sure you want to restart the system?')) {
-          alert('System restart initiated');
-        }
-        break;
-      case 'update':
-        alert('System update check initiated');
-        break;
-    }
-  };
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 animate-spin text-emerald-600 mx-auto mb-4" />
+          <p className="text-gray-600">Loading admin dashboard...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600 mt-1">Manage AgriSmart platform and users</p>
+          <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <Shield className="w-6 h-6 mr-2 text-purple-600" />
+            Admin Dashboard
+          </h1>
+          <p className="text-gray-600 mt-1">System administration and management</p>
         </div>
         <div className="mt-4 sm:mt-0 flex space-x-2">
-          <select
-            value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+          <button 
+            onClick={loadDashboardData}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors flex items-center space-x-2"
           >
-            <option value="7days">Last 7 Days</option>
-            <option value="30days">Last 30 Days</option>
-            <option value="90days">Last 90 Days</option>
-            <option value="year">This Year</option>
-          </select>
+            <RefreshCw className="w-4 h-4" />
+            <span>Refresh</span>
+          </button>
           <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
             <Download className="w-4 h-4" />
-            <span>Export Report</span>
+            <span>Export</span>
           </button>
         </div>
       </div>
 
-      {/* Admin Context Banner */}
+      {/* Admin Context */}
       <div className="bg-gradient-to-r from-purple-600 to-indigo-700 rounded-lg shadow-sm text-white p-6">
-        <h3 className="text-lg font-bold mb-3">🛡️ AgriSmart Admin Control Center</h3>
+        <h3 className="text-lg font-bold mb-3">🇿🇲 AgriSmart System Administration</h3>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Platform Status</h4>
-            <p className="text-sm opacity-90">All systems operational - {systemMetrics.serverUptime}% uptime</p>
+            <h4 className="font-semibold mb-1">System Status</h4>
+            <p className="text-sm opacity-90">All services operational</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Active Users</h4>
-            <p className="text-sm opacity-90">{adminStats.activeUsers} farmers online across Zambia</p>
+            <h4 className="font-semibold mb-1">Database</h4>
+            <p className="text-sm opacity-90">Connected and synchronized</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Revenue</h4>
-            <p className="text-sm opacity-90">ZMW {adminStats.totalRevenue.toLocaleString()} this month</p>
+            <h4 className="font-semibold mb-1">API Status</h4>
+            <p className="text-sm opacity-90">Healthy - 99.9% uptime</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Support Queue</h4>
-            <p className="text-sm opacity-90">{adminStats.supportTickets} tickets pending response</p>
+            <h4 className="font-semibold mb-1">Last Backup</h4>
+            <p className="text-sm opacity-90">2 hours ago</p>
           </div>
         </div>
       </div>
 
       {/* Overview Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Total Users</p>
-              <p className="text-2xl font-bold text-gray-900 mt-2">{adminStats.totalUsers.toLocaleString()}</p>
-              <p className="text-sm text-emerald-600 mt-1">+{adminStats.newUsersToday} today</p>
-            </div>
-            <div className="p-3 bg-blue-100 rounded-full">
-              <Users className="w-6 h-6 text-blue-600" />
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Users</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">{stats.users.total.toLocaleString()}</p>
+                <p className="text-sm text-emerald-600 mt-1">+{stats.users.newThisMonth} this month</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Users className="w-6 h-6 text-blue-600" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Active Farms</p>
-              <p className="text-2xl font-bold text-emerald-600 mt-2">{adminStats.totalFarms.toLocaleString()}</p>
-              <p className="text-sm text-emerald-600 mt-1">+{adminStats.monthlyGrowth}% growth</p>
-            </div>
-            <div className="p-3 bg-emerald-100 rounded-full">
-              <Sprout className="w-6 h-6 text-emerald-600" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total Farms</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">{stats.farms.total.toLocaleString()}</p>
+                <p className="text-sm text-green-600 mt-1">{stats.farms.totalArea.toLocaleString()} hectares</p>
+              </div>
+              <div className="p-3 bg-emerald-100 rounded-full">
+                <Building className="w-6 h-6 text-emerald-600" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Monthly Revenue</p>
-              <p className="text-2xl font-bold text-green-600 mt-2">ZMW {adminStats.totalRevenue.toLocaleString()}</p>
-              <p className="text-sm text-green-600 mt-1">+{adminStats.monthlyGrowth}% vs last month</p>
-            </div>
-            <div className="p-3 bg-green-100 rounded-full">
-              <DollarSign className="w-6 h-6 text-green-600" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Active Crops</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">{stats.crops.total.toLocaleString()}</p>
+                <p className="text-sm text-yellow-600 mt-1">{stats.crops.totalYield.toLocaleString()} tons yield</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-full">
+                <Sprout className="w-6 h-6 text-yellow-600" />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">System Uptime</p>
-              <p className="text-2xl font-bold text-purple-600 mt-2">{adminStats.systemUptime}%</p>
-              <p className="text-sm text-purple-600 mt-1">Excellent performance</p>
-            </div>
-            <div className="p-3 bg-purple-100 rounded-full">
-              <Activity className="w-6 h-6 text-purple-600" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600">Content Items</p>
-              <p className="text-2xl font-bold text-indigo-600 mt-2">{adminStats.contentItems.toLocaleString()}</p>
-              <p className="text-sm text-indigo-600 mt-1">{adminStats.storageUsed}% storage used</p>
-            </div>
-            <div className="p-3 bg-indigo-100 rounded-full">
-              <FileText className="w-6 h-6 text-indigo-600" />
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">IoT Devices</p>
+                <p className="text-2xl font-bold text-gray-900 mt-2">{stats.iot.total.toLocaleString()}</p>
+                <p className="text-sm text-purple-600 mt-1">{stats.iot.online} online</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-full">
+                <Cpu className="w-6 h-6 text-purple-600" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Tab Navigation */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -502,10 +320,9 @@ const AdminDashboard: React.FC = () => {
             {[
               { id: 'overview', label: 'Overview', icon: BarChart3 },
               { id: 'users', label: 'User Management', icon: Users },
-              { id: 'content', label: 'Content Management', icon: FileText },
-              { id: 'system', label: 'System Health', icon: Server },
-              { id: 'support', label: 'Support', icon: MessageSquare },
-              { id: 'settings', label: 'Settings', icon: Settings }
+              { id: 'analytics', label: 'System Analytics', icon: TrendingUp },
+              { id: 'content', label: 'Content Moderation', icon: MessageCircle },
+              { id: 'settings', label: 'System Settings', icon: Settings }
             ].map((tab) => {
               const Icon = tab.icon;
               return (
@@ -514,7 +331,7 @@ const AdminDashboard: React.FC = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
-                      ? 'border-emerald-500 text-emerald-600'
+                      ? 'border-purple-500 text-purple-600'
                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                   }`}
                 >
@@ -527,89 +344,71 @@ const AdminDashboard: React.FC = () => {
         </div>
 
         <div className="p-6">
-          {activeTab === 'overview' && (
+          {activeTab === 'overview' && stats && (
             <div className="space-y-6">
-              {/* Analytics Charts */}
+              {/* System Health */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">User Growth & Revenue</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={userGrowthData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="month" />
-                      <YAxis />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="users" stroke="#3B82F6" strokeWidth={2} name="Total Users" />
-                      <Line type="monotone" dataKey="active" stroke="#10B981" strokeWidth={2} name="Active Users" />
-                    </LineChart>
-                  </ResponsiveContainer>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">User Distribution</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Farmers</span>
+                      <span className="font-semibold">{stats.users.farmers.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Extension Officers</span>
+                      <span className="font-semibold">{stats.users.extensionOfficers.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Cooperatives</span>
+                      <span className="font-semibold">{stats.users.cooperatives.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Subscription Distribution</h3>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={subscriptionData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      >
-                        {subscriptionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Top Provinces by Farms</h3>
+                  <div className="space-y-3">
+                    {stats.farms.byProvince.slice(0, 5).map((province: any, index: number) => (
+                      <div key={index} className="flex justify-between items-center">
+                        <span className="text-gray-600">{province._id}</span>
+                        <span className="font-semibold">{province.count} farms</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {/* Provincial Distribution */}
+              {/* Crop Distribution */}
               <div className="bg-gray-50 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Users by Province</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <BarChart data={provinceData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="province" />
-                    <YAxis />
-                    <Tooltip />
-                    <Bar dataKey="users" fill="#3B82F6" name="Users" />
-                    <Bar dataKey="farms" fill="#10B981" name="Farms" />
-                  </BarChart>
-                </ResponsiveContainer>
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Crop Distribution</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {stats.crops.byCrop.map((crop: any, index: number) => (
+                    <div key={index} className="text-center">
+                      <div className="bg-emerald-100 rounded-lg p-4 mb-2">
+                        <Sprout className="w-8 h-8 text-emerald-600 mx-auto" />
+                      </div>
+                      <h4 className="font-semibold text-gray-900">{crop._id}</h4>
+                      <p className="text-sm text-gray-600">{crop.count} crops</p>
+                      <p className="text-xs text-gray-500">{crop.totalArea.toLocaleString()} ha</p>
+                    </div>
+                  ))}
+                </div>
               </div>
 
-              {/* Recent Activity */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Platform Activity</h3>
-                <div className="space-y-4">
-                  <div className="flex items-start space-x-3">
-                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">New user registration spike</p>
-                      <p className="text-xs text-gray-500">23 new farmers joined today from Central Province</p>
-                      <p className="text-xs text-gray-400">2 hours ago</p>
+              {/* IoT Device Status */}
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">IoT Device Types</h3>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {stats.iot.byType.map((device: any, index: number) => (
+                    <div key={index} className="text-center">
+                      <div className="bg-purple-100 rounded-lg p-4 mb-2">
+                        <Cpu className="w-8 h-8 text-purple-600 mx-auto" />
+                      </div>
+                      <h4 className="font-semibold text-gray-900">{device._id}</h4>
+                      <p className="text-sm text-gray-600">{device.count} devices</p>
                     </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">High support ticket volume</p>
-                      <p className="text-xs text-gray-500">15 new tickets submitted in the last hour</p>
-                      <p className="text-xs text-gray-400">1 hour ago</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <TrendingUp className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">Revenue milestone reached</p>
-                      <p className="text-xs text-gray-500">Monthly revenue exceeded ZMW 125,000</p>
-                      <p className="text-xs text-gray-400">3 hours ago</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -619,134 +418,134 @@ const AdminDashboard: React.FC = () => {
             <div className="space-y-6">
               {/* User Filters */}
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                <div className="flex flex-wrap gap-2">
-                  {['all', 'farmer', 'extension_officer', 'cooperative', 'active', 'inactive'].map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setUserFilter(filter)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors capitalize ${
-                        userFilter === filter
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {filter.replace('_', ' ')}
-                    </button>
-                  ))}
+                <div className="flex flex-wrap gap-4">
+                  <select
+                    value={userFilters.role}
+                    onChange={(e) => setUserFilters({...userFilters, role: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="all">All Roles</option>
+                    <option value="farmer">Farmers</option>
+                    <option value="extension_officer">Extension Officers</option>
+                    <option value="cooperative">Cooperatives</option>
+                    <option value="admin">Administrators</option>
+                  </select>
+
+                  <select
+                    value={userFilters.province}
+                    onChange={(e) => setUserFilters({...userFilters, province: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="all">All Provinces</option>
+                    <option value="Lusaka Province">Lusaka Province</option>
+                    <option value="Central Province">Central Province</option>
+                    <option value="Eastern Province">Eastern Province</option>
+                    <option value="Copperbelt Province">Copperbelt Province</option>
+                    <option value="Southern Province">Southern Province</option>
+                  </select>
+
+                  <select
+                    value={userFilters.status}
+                    onChange={(e) => setUserFilters({...userFilters, status: e.target.value})}
+                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  >
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
                 </div>
 
-                <div className="flex space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder="Search users..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    />
-                  </div>
-                  <button className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
-                    <Plus className="w-4 h-4" />
-                    <span>Add User</span>
-                  </button>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  />
                 </div>
               </div>
 
               {/* Users Table */}
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                  <h3 className="text-lg font-semibold text-gray-900">User Management</h3>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
+                    <thead className="bg-gray-50">
                       <tr>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">User</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Role</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Location</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Subscription</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Revenue</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stats</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-200">
                       {filteredUsers.map((user) => (
-                        <tr key={user.id} className="hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-8 h-8 bg-emerald-100 rounded-full flex items-center justify-center">
-                                <Users className="w-4 h-4 text-emerald-600" />
+                        <tr key={user._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="w-10 h-10 bg-emerald-100 rounded-full flex items-center justify-center">
+                                <Users className="w-6 h-6 text-emerald-600" />
                               </div>
-                              <div>
-                                <p className="font-medium text-gray-900">{user.name}</p>
-                                <p className="text-sm text-gray-500">{user.email}</p>
-                                <div className="flex items-center space-x-2 mt-1">
-                                  {user.verified && (
-                                    <CheckCircle className="w-3 h-3 text-emerald-600" />
-                                  )}
-                                  <span className="text-xs text-gray-400">Rep: {user.reputation}</span>
-                                </div>
+                              <div className="ml-4">
+                                <div className="text-sm font-medium text-gray-900">{user.name}</div>
+                                <div className="text-sm text-gray-500">{user.email}</div>
                               </div>
                             </div>
                           </td>
-                          <td className="py-3 px-4">
-                            <span className="capitalize text-gray-700">{user.role.replace('_', ' ')}</span>
-                            {user.farmSize !== 'N/A' && (
-                              <p className="text-xs text-gray-500">{user.farmSize}</p>
-                            )}
-                          </td>
-                          <td className="py-3 px-4">
-                            <p className="text-gray-700">{user.province}</p>
-                            <p className="text-xs text-gray-500">{user.phone}</p>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(user.status)}`}>
-                              {user.status}
-                            </span>
-                            <p className="text-xs text-gray-500 mt-1">{user.lastActive}</p>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getSubscriptionColor(user.subscription)}`}>
-                              {user.subscription}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              user.role === 'admin' ? 'bg-purple-100 text-purple-800' :
+                              user.role === 'extension_officer' ? 'bg-blue-100 text-blue-800' :
+                              user.role === 'cooperative' ? 'bg-orange-100 text-orange-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {user.role.replace('_', ' ')}
                             </span>
                           </td>
-                          <td className="py-3 px-4">
-                            <p className="font-medium text-gray-900">ZMW {user.revenue.toLocaleString()}</p>
-                            <p className="text-xs text-gray-500">{user.totalPosts} posts</p>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center">
+                              <MapPin className="w-4 h-4 text-gray-400 mr-1" />
+                              {user.farmProfile?.location}, {user.farmProfile?.province}
+                            </div>
                           </td>
-                          <td className="py-3 px-4">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center space-x-4">
+                              <div className="flex items-center">
+                                <Star className="w-4 h-4 text-yellow-400 mr-1" />
+                                {user.stats?.reputation || 0}
+                              </div>
+                              <div className="flex items-center">
+                                <MessageCircle className="w-4 h-4 text-blue-400 mr-1" />
+                                {user.stats?.postsCreated || 0}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
+                              user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {user.isActive ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div className="flex space-x-2">
-                              <button 
-                                onClick={() => handleUserAction('view', user.id)}
-                                className="p-1 text-blue-600 hover:bg-blue-100 rounded"
-                              >
+                              <button className="text-blue-600 hover:text-blue-900">
                                 <Eye className="w-4 h-4" />
                               </button>
-                              <button 
-                                onClick={() => handleUserAction('message', user.id)}
-                                className="p-1 text-green-600 hover:bg-green-100 rounded"
-                              >
-                                <Mail className="w-4 h-4" />
+                              <button className="text-emerald-600 hover:text-emerald-900">
+                                <Edit className="w-4 h-4" />
                               </button>
-                              {user.status === 'active' ? (
-                                <button 
-                                  onClick={() => handleUserAction('suspend', user.id)}
-                                  className="p-1 text-yellow-600 hover:bg-yellow-100 rounded"
-                                >
-                                  <Ban className="w-4 h-4" />
-                                </button>
-                              ) : (
-                                <button 
-                                  onClick={() => handleUserAction('activate', user.id)}
-                                  className="p-1 text-emerald-600 hover:bg-emerald-100 rounded"
-                                >
-                                  <UserCheck className="w-4 h-4" />
-                                </button>
-                              )}
                               <button 
-                                onClick={() => handleUserAction('delete', user.id)}
-                                className="p-1 text-red-600 hover:bg-red-100 rounded"
+                                onClick={() => handleUserAction(user._id, user.isActive ? 'deactivate' : 'activate')}
+                                className={user.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}
                               >
-                                <Trash2 className="w-4 h-4" />
+                                {user.isActive ? <Trash2 className="w-4 h-4" /> : <CheckCircle className="w-4 h-4" />}
                               </button>
                             </div>
                           </td>
@@ -754,6 +553,72 @@ const AdminDashboard: React.FC = () => {
                       ))}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">System Analytics</h3>
+                <p className="text-gray-600">Comprehensive system performance and usage analytics</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg text-white p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-blue-100">System Uptime</p>
+                      <p className="text-3xl font-bold">99.9%</p>
+                      <p className="text-blue-200">Last 30 days</p>
+                    </div>
+                    <Activity className="w-12 h-12 text-blue-200" />
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg text-white p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-emerald-100">API Requests</p>
+                      <p className="text-3xl font-bold">2.4M</p>
+                      <p className="text-emerald-200">This month</p>
+                    </div>
+                    <Database className="w-12 h-12 text-emerald-200" />
+                  </div>
+                </div>
+
+                <div className="bg-gradient-to-r from-purple-500 to-purple-600 rounded-lg text-white p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-purple-100">Data Storage</p>
+                      <p className="text-3xl font-bold">1.2TB</p>
+                      <p className="text-purple-200">Total used</p>
+                    </div>
+                    <Package className="w-12 h-12 text-purple-200" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gray-50 rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Metrics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-emerald-600">156ms</div>
+                    <div className="text-sm text-gray-600">Avg Response Time</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">99.2%</div>
+                    <div className="text-sm text-gray-600">Success Rate</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-purple-600">1,247</div>
+                    <div className="text-sm text-gray-600">Active Sessions</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-yellow-600">23GB</div>
+                    <div className="text-sm text-gray-600">Daily Data Transfer</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -761,392 +626,38 @@ const AdminDashboard: React.FC = () => {
 
           {activeTab === 'content' && (
             <div className="space-y-6">
-              {/* Content Filters */}
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between space-y-4 lg:space-y-0">
-                <div className="flex flex-wrap gap-2">
-                  {['all', 'video', 'article', 'guide', 'published', 'draft', 'review'].map((filter) => (
-                    <button
-                      key={filter}
-                      onClick={() => setContentFilter(filter)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium transition-colors capitalize ${
-                        contentFilter === filter
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {filter}
-                    </button>
-                  ))}
-                </div>
-
-                <div className="flex space-x-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      placeholder="Search content..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    />
-                  </div>
-                  <button 
-                    onClick={() => setShowContentModal(true)}
-                    className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>Add Content</span>
-                  </button>
-                </div>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Content Moderation</h3>
+                <p className="text-gray-600">Manage community posts and user-generated content</p>
               </div>
 
-              {/* Content Grid */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                {filteredContent.map((item) => (
-                  <div key={item.id} className="bg-white border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow">
-                    <div className="p-4">
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center space-x-2">
-                          {item.type === 'video' && <Video className="w-5 h-5 text-blue-600" />}
-                          {item.type === 'article' && <FileText className="w-5 h-5 text-green-600" />}
-                          {item.type === 'guide' && <BookOpen className="w-5 h-5 text-purple-600" />}
-                          <span className="text-sm font-medium text-gray-600 capitalize">{item.type}</span>
-                        </div>
-                        <div className="flex space-x-1">
-                          <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(item.status)}`}>
-                            {item.status}
-                          </span>
-                          {item.featured && (
-                            <Star className="w-4 h-4 text-yellow-500" />
-                          )}
-                        </div>
-                      </div>
-                      
-                      <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">{item.title}</h4>
-                      <p className="text-sm text-gray-600 mb-3">By {item.author}</p>
-                      
-                      <div className="grid grid-cols-3 gap-2 text-xs text-gray-500 mb-4">
-                        <div className="flex items-center space-x-1">
-                          <Eye className="w-3 h-3" />
-                          <span>{item.views.toLocaleString()}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <ThumbsUp className="w-3 h-3" />
-                          <span>{item.likes}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <MessageSquare className="w-3 h-3" />
-                          <span>{item.comments}</span>
-                        </div>
-                      </div>
-                      
-                      <div className="text-xs text-gray-500 mb-4">
-                        <p>Created: {new Date(item.createdDate).toLocaleDateString()}</p>
-                        <p>Language: {item.language}</p>
-                        {item.duration !== 'N/A' && <p>Duration: {item.duration}</p>}
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <button 
-                          onClick={() => handleContentAction('publish', item.id)}
-                          className="flex-1 bg-emerald-600 text-white py-1 px-2 rounded text-xs hover:bg-emerald-700 transition-colors"
-                        >
-                          {item.status === 'published' ? 'Unpublish' : 'Publish'}
-                        </button>
-                        <button 
-                          onClick={() => handleContentAction('feature', item.id)}
-                          className="p-1 bg-yellow-100 text-yellow-600 rounded hover:bg-yellow-200 transition-colors"
-                        >
-                          <Star className="w-3 h-3" />
-                        </button>
-                        <button 
-                          onClick={() => handleContentAction('delete', item.id)}
-                          className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200 transition-colors"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'system' && (
-            <div className="space-y-6">
-              {/* System Health Overview */}
               <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Server Uptime</p>
-                      <p className="text-2xl font-bold text-emerald-600 mt-2">{systemMetrics.serverUptime}%</p>
-                    </div>
-                    <div className="p-3 bg-emerald-100 rounded-full">
-                      <Server className="w-6 h-6 text-emerald-600" />
-                    </div>
-                  </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+                  <MessageCircle className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">2,345</div>
+                  <div className="text-sm text-gray-600">Total Posts</div>
                 </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Response Time</p>
-                      <p className="text-2xl font-bold text-blue-600 mt-2">{systemMetrics.responseTime}ms</p>
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <Zap className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+                  <AlertTriangle className="w-8 h-8 text-yellow-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">23</div>
+                  <div className="text-sm text-gray-600">Pending Review</div>
                 </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Active Connections</p>
-                      <p className="text-2xl font-bold text-purple-600 mt-2">{systemMetrics.activeConnections.toLocaleString()}</p>
-                    </div>
-                    <div className="p-3 bg-purple-100 rounded-full">
-                      <Network className="w-6 h-6 text-purple-600" />
-                    </div>
-                  </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+                  <CheckCircle className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">2,298</div>
+                  <div className="text-sm text-gray-600">Approved</div>
                 </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Error Rate</p>
-                      <p className="text-2xl font-bold text-green-600 mt-2">{systemMetrics.errorRate}%</p>
-                    </div>
-                    <div className="p-3 bg-green-100 rounded-full">
-                      <CheckCircle className="w-6 h-6 text-green-600" />
-                    </div>
-                  </div>
+                <div className="bg-white border border-gray-200 rounded-lg p-6 text-center">
+                  <Trash2 className="w-8 h-8 text-red-600 mx-auto mb-2" />
+                  <div className="text-2xl font-bold text-gray-900">24</div>
+                  <div className="text-sm text-gray-600">Removed</div>
                 </div>
               </div>
 
-              {/* Resource Usage */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Resource Usage</h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="flex items-center space-x-2">
-                          <Cpu className="w-4 h-4 text-blue-600" />
-                          <span>CPU Usage</span>
-                        </span>
-                        <span>{systemMetrics.cpuUsage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${systemMetrics.cpuUsage}%` }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="flex items-center space-x-2">
-                          <MemoryStick className="w-4 h-4 text-green-600" />
-                          <span>Memory Usage</span>
-                        </span>
-                        <span>{systemMetrics.memoryUsage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-green-500 h-2 rounded-full" style={{ width: `${systemMetrics.memoryUsage}%` }}></div>
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <div className="flex justify-between text-sm mb-2">
-                        <span className="flex items-center space-x-2">
-                          <HardDrive className="w-4 h-4 text-yellow-600" />
-                          <span>Disk Usage</span>
-                        </span>
-                        <span>{systemMetrics.diskUsage}%</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div className="bg-yellow-500 h-2 rounded-full" style={{ width: `${systemMetrics.diskUsage}%` }}></div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-4">System Information</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Database Size:</span>
-                      <span className="font-medium">{systemMetrics.databaseSize} GB</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Network Traffic:</span>
-                      <span className="font-medium">{systemMetrics.networkTraffic} GB/hour</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Last Backup:</span>
-                      <span className="font-medium">{systemMetrics.lastBackup}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Backup Status:</span>
-                      <span className="font-medium text-emerald-600 capitalize">{systemMetrics.backupStatus}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* System Actions */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">System Actions</h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <button 
-                    onClick={() => handleSystemAction('backup')}
-                    className="bg-blue-600 text-white p-4 rounded-lg hover:bg-blue-700 transition-colors flex flex-col items-center space-y-2"
-                  >
-                    <Database className="w-6 h-6" />
-                    <span className="text-sm font-medium">Backup Now</span>
-                  </button>
-                  <button 
-                    onClick={() => handleSystemAction('maintenance')}
-                    className="bg-yellow-600 text-white p-4 rounded-lg hover:bg-yellow-700 transition-colors flex flex-col items-center space-y-2"
-                  >
-                    <Tool className="w-6 h-6" />
-                    <span className="text-sm font-medium">Maintenance</span>
-                  </button>
-                  <button 
-                    onClick={() => handleSystemAction('update')}
-                    className="bg-purple-600 text-white p-4 rounded-lg hover:bg-purple-700 transition-colors flex flex-col items-center space-y-2"
-                  >
-                    <RefreshCw className="w-6 h-6" />
-                    <span className="text-sm font-medium">Check Updates</span>
-                  </button>
-                  <button 
-                    onClick={() => handleSystemAction('restart')}
-                    className="bg-red-600 text-white p-4 rounded-lg hover:bg-red-700 transition-colors flex flex-col items-center space-y-2"
-                  >
-                    <Zap className="w-6 h-6" />
-                    <span className="text-sm font-medium">Restart System</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'support' && (
-            <div className="space-y-6">
-              {/* Support Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Open Tickets</p>
-                      <p className="text-2xl font-bold text-blue-600 mt-2">{supportTickets.filter(t => t.status === 'open').length}</p>
-                    </div>
-                    <div className="p-3 bg-blue-100 rounded-full">
-                      <MessageSquare className="w-6 h-6 text-blue-600" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">In Progress</p>
-                      <p className="text-2xl font-bold text-yellow-600 mt-2">{supportTickets.filter(t => t.status === 'in_progress').length}</p>
-                    </div>
-                    <div className="p-3 bg-yellow-100 rounded-full">
-                      <Clock className="w-6 h-6 text-yellow-600" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Urgent</p>
-                      <p className="text-2xl font-bold text-red-600 mt-2">{supportTickets.filter(t => t.priority === 'urgent').length}</p>
-                    </div>
-                    <div className="p-3 bg-red-100 rounded-full">
-                      <AlertTriangle className="w-6 h-6 text-red-600" />
-                    </div>
-                  </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Avg Response</p>
-                      <p className="text-2xl font-bold text-emerald-600 mt-2">2.5h</p>
-                    </div>
-                    <div className="p-3 bg-emerald-100 rounded-full">
-                      <Target className="w-6 h-6 text-emerald-600" />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Support Tickets */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                  <h3 className="text-lg font-semibold text-gray-900">Support Tickets</h3>
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-gray-50 border-b border-gray-200">
-                      <tr>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Ticket</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">User</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Priority</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Status</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Category</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Created</th>
-                        <th className="text-left py-3 px-4 font-medium text-gray-700">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-gray-200">
-                      {supportTickets.map((ticket) => (
-                        <tr key={ticket.id} className="hover:bg-gray-50">
-                          <td className="py-3 px-4">
-                            <p className="font-medium text-gray-900">#{ticket.id}</p>
-                            <p className="text-sm text-gray-600">{ticket.title}</p>
-                          </td>
-                          <td className="py-3 px-4">
-                            <p className="text-gray-700">{ticket.user}</p>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getPriorityColor(ticket.priority)}`}>
-                              {ticket.priority}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(ticket.status)}`}>
-                              {ticket.status.replace('_', ' ')}
-                            </span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <span className="capitalize text-gray-700">{ticket.category}</span>
-                          </td>
-                          <td className="py-3 px-4">
-                            <p className="text-sm text-gray-700">{ticket.created}</p>
-                            <p className="text-xs text-gray-500">Updated: {ticket.lastUpdate}</p>
-                          </td>
-                          <td className="py-3 px-4">
-                            <div className="flex space-x-2">
-                              <button className="p-1 text-blue-600 hover:bg-blue-100 rounded">
-                                <Eye className="w-4 h-4" />
-                              </button>
-                              <button className="p-1 text-green-600 hover:bg-green-100 rounded">
-                                <MessageSquare className="w-4 h-4" />
-                              </button>
-                              <button className="p-1 text-gray-600 hover:bg-gray-100 rounded">
-                                <Archive className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div className="flex items-center">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 mr-2" />
+                  <span className="text-yellow-800">23 posts are pending moderation review</span>
                 </div>
               </div>
             </div>
@@ -1154,368 +665,64 @@ const AdminDashboard: React.FC = () => {
 
           {activeTab === 'settings' && (
             <div className="space-y-6">
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Platform Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Platform Name</label>
-                    <input
-                      type="text"
-                      defaultValue="AgriSmart"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Default Language</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                      <option value="English">English</option>
-                      <option value="Bemba">Bemba</option>
-                      <option value="Nyanja">Nyanja</option>
-                      <option value="Tonga">Tonga</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Default Currency</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                      <option value="ZMW">Zambian Kwacha (ZMW)</option>
-                      <option value="USD">US Dollar (USD)</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Time Zone</label>
-                    <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                      <option value="Africa/Lusaka">Africa/Lusaka (CAT)</option>
-                    </select>
-                  </div>
-                </div>
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">System Settings</h3>
+                <p className="text-gray-600">Configure system-wide settings and preferences</p>
               </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                      <p className="text-sm text-gray-600">Require 2FA for admin accounts</p>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-4">General Settings</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Maintenance Mode</span>
+                      <button className="bg-gray-200 rounded-full w-12 h-6 flex items-center">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">Session Timeout</p>
-                      <p className="text-sm text-gray-600">Auto-logout inactive admin sessions</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">User Registration</span>
+                      <button className="bg-emerald-500 rounded-full w-12 h-6 flex items-center justify-end">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
                     </div>
-                    <select className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                      <option value="30">30 minutes</option>
-                      <option value="60">1 hour</option>
-                      <option value="120">2 hours</option>
-                      <option value="240">4 hours</option>
-                    </select>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Email Notifications</span>
+                      <button className="bg-emerald-500 rounded-full w-12 h-6 flex items-center justify-end">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Notification Settings</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">Email Notifications</p>
-                      <p className="text-sm text-gray-600">Send admin alerts via email</p>
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <h4 className="font-semibold text-gray-900 mb-4">Security Settings</h4>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Two-Factor Authentication</span>
+                      <button className="bg-emerald-500 rounded-full w-12 h-6 flex items-center justify-end">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium text-gray-900">SMS Alerts</p>
-                      <p className="text-sm text-gray-600">Critical system alerts via SMS</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">API Rate Limiting</span>
+                      <button className="bg-emerald-500 rounded-full w-12 h-6 flex items-center justify-end">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" defaultChecked className="sr-only peer" />
-                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-700">Audit Logging</span>
+                      <button className="bg-emerald-500 rounded-full w-12 h-6 flex items-center justify-end">
+                        <div className="bg-white w-5 h-5 rounded-full shadow transform transition-transform"></div>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex justify-end">
-                <button className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
-                  <Save className="w-4 h-4" />
-                  <span>Save Settings</span>
-                </button>
               </div>
             </div>
           )}
         </div>
       </div>
-
-      {/* User Details Modal */}
-      {showUserModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">User Details</h3>
-              <button 
-                onClick={() => setShowUserModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Personal Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Name:</span>
-                      <span className="font-medium">{selectedUser.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Email:</span>
-                      <span className="font-medium">{selectedUser.email}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Phone:</span>
-                      <span className="font-medium">{selectedUser.phone}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Role:</span>
-                      <span className="font-medium capitalize">{selectedUser.role.replace('_', ' ')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Province:</span>
-                      <span className="font-medium">{selectedUser.province}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Join Date:</span>
-                      <span className="font-medium">{new Date(selectedUser.joinDate).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-semibold text-gray-900 mb-3">Account Status</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(selectedUser.status)}`}>
-                        {selectedUser.status}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Subscription:</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSubscriptionColor(selectedUser.subscription)}`}>
-                        {selectedUser.subscription}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Verified:</span>
-                      <span className="font-medium">{selectedUser.verified ? 'Yes' : 'No'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Last Active:</span>
-                      <span className="font-medium">{selectedUser.lastActive}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Reputation:</span>
-                      <span className="font-medium">{selectedUser.reputation}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-600">Total Posts:</span>
-                      <span className="font-medium">{selectedUser.totalPosts}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {selectedUser.farmSize !== 'N/A' && (
-                <div className="mt-6">
-                  <h4 className="font-semibold text-gray-900 mb-3">Farm Information</h4>
-                  <div className="bg-emerald-50 rounded-lg p-4">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-emerald-700">Farm Size:</span>
-                        <span className="font-medium">{selectedUser.farmSize}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-emerald-700">Revenue:</span>
-                        <span className="font-medium">ZMW {selectedUser.revenue.toLocaleString()}</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="flex space-x-3 mt-6">
-                <button 
-                  onClick={() => setShowUserModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Close
-                </button>
-                <button className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
-                  <Mail className="w-4 h-4" />
-                  <span>Send Message</span>
-                </button>
-                <button className="bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors flex items-center space-x-2">
-                  <Edit className="w-4 h-4" />
-                  <span>Edit User</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Content Modal */}
-      {showContentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Content</h3>
-              <button 
-                onClick={() => setShowContentModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Content Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                    <option value="video">Video</option>
-                    <option value="article">Article</option>
-                    <option value="guide">Guide</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                  <input
-                    type="text"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    placeholder="Enter content title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                    <option value="crops">Crops</option>
-                    <option value="pest_management">Pest Management</option>
-                    <option value="sustainability">Sustainability</option>
-                    <option value="water_management">Water Management</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                    <option value="English">English</option>
-                    <option value="English/Bemba">English/Bemba</option>
-                    <option value="English/Nyanja">English/Nyanja</option>
-                    <option value="English/Tonga">English/Tonga</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex space-x-3 mt-6">
-                <button 
-                  onClick={() => setShowContentModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Content created successfully!');
-                    setShowContentModal(false);
-                  }}
-                  className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors"
-                >
-                  Create Content
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* System Maintenance Modal */}
-      {showSystemModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-lg max-w-md w-full">
-            <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">System Maintenance</h3>
-              <button 
-                onClick={() => setShowSystemModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Maintenance Type</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                    <option value="scheduled">Scheduled Maintenance</option>
-                    <option value="emergency">Emergency Maintenance</option>
-                    <option value="update">System Update</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Duration (minutes)</label>
-                  <input
-                    type="number"
-                    defaultValue="30"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notification Message</label>
-                  <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                    rows={3}
-                    placeholder="System will be under maintenance..."
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <input type="checkbox" id="notify-users" className="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" />
-                  <label htmlFor="notify-users" className="text-sm text-gray-700">Notify all users</label>
-                </div>
-              </div>
-
-              <div className="flex space-x-3 mt-6">
-                <button 
-                  onClick={() => setShowSystemModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={() => {
-                    alert('Maintenance mode activated!');
-                    setShowSystemModal(false);
-                  }}
-                  className="flex-1 bg-yellow-600 text-white py-2 px-4 rounded-lg hover:bg-yellow-700 transition-colors"
-                >
-                  Start Maintenance
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
