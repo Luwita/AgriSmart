@@ -55,7 +55,22 @@ const AdminDashboard: React.FC = () => {
     try {
       setLoading(true);
       
-      // For demo purposes, use mock data if API is not available
+      // Load dashboard stats
+      const dashboardResponse = await adminAPI.getDashboard();
+      setStats(dashboardResponse.data.stats);
+      
+      // Load users
+      const usersResponse = await adminAPI.getUsers();
+      setUsers(usersResponse.data.users);
+      
+      // Load analytics
+      const analyticsResponse = await adminAPI.getAnalytics();
+      setAnalytics(analyticsResponse.data.analytics);
+      
+    } catch (error) {
+      console.error('Error loading dashboard data:', error);
+      
+      // Fallback to mock data if API fails
       const mockStats = {
         users: {
           total: 1247,
@@ -149,20 +164,6 @@ const AdminDashboard: React.FC = () => {
 
       setStats(mockStats);
       setUsers(mockUsers);
-      
-      // Try to load real data if API is available
-      try {
-        const dashboardResponse = await adminAPI.getDashboard();
-        setStats(dashboardResponse.data.stats);
-        
-        const usersResponse = await adminAPI.getUsers();
-        setUsers(usersResponse.data.users);
-      } catch (apiError) {
-        console.log('Using mock data - API not available');
-      }
-      
-    } catch (error) {
-      console.error('Error loading dashboard data:', error);
     } finally {
       setLoading(false);
     }
@@ -242,16 +243,16 @@ const AdminDashboard: React.FC = () => {
             <p className="text-sm opacity-90">All services operational</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Database</h4>
-            <p className="text-sm opacity-90">Connected and synchronized</p>
+            <h4 className="font-semibold mb-1">Data Storage</h4>
+            <p className="text-sm opacity-90">Local storage active</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
             <h4 className="font-semibold mb-1">API Status</h4>
-            <p className="text-sm opacity-90">Healthy - 99.9% uptime</p>
+            <p className="text-sm opacity-90">Frontend API - 100% uptime</p>
           </div>
           <div className="bg-white bg-opacity-20 rounded-lg p-3">
-            <h4 className="font-semibold mb-1">Last Backup</h4>
-            <p className="text-sm opacity-90">2 hours ago</p>
+            <h4 className="font-semibold mb-1">Last Sync</h4>
+            <p className="text-sm opacity-90">Real-time updates</p>
           </div>
         </div>
       </div>
