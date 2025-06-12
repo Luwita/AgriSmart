@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dot from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.js';
 import farmRoutes from './routes/farms.js';
@@ -16,6 +18,10 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 // Load environment variables
 dot.config();
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -89,6 +95,14 @@ app.get('/api/database/status', (req, res) => {
       3: 'disconnecting'
     }
   });
+});
+
+// Serve static files from the frontend build directory
+app.use(express.static(path.join(__dirname, '../dist')));
+
+// Catch-all handler: send back React's index.html file for any non-API routes
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 // Error handling middleware
