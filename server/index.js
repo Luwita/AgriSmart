@@ -3,6 +3,7 @@ import cors from 'cors';
 import dot from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import fs from 'fs';
 import connectDB from './config/database.js';
 import authRoutes from './routes/auth.js';
 import farmRoutes from './routes/farms.js';
@@ -97,13 +98,36 @@ app.get('/api/database/status', (req, res) => {
   });
 });
 
-// Serve static files from the frontend build directory
-app.use(express.static(path.join(__dirname, '../dist')));
+// Check if dist directory exists before serving static files
+const distPath = path.join(__dirname, '../dist');
+if (fs.existsSync(distPath)) {
+  // Serve static files from the frontend build directory
+  app.use(express.static(distPath));
 
-// Catch-all handler: send back React's index.html file for any non-API routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'));
-});
+  // Catch-all handler: send back React's index.html file for any non-API routes
+  app.get('*', (req, res) => {
+    const indexPath = path.join(distPath, 'index.html');
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else {
+      res.status(404).json({
+        message: 'Frontend not built yet. Please run "npm run build" to build the frontend application.',
+        error: 'index.html not found'
+      });
+    }
+  });
+} else {
+  // If dist doesn't exist, provide helpful message
+  app.get('*', (req, res) => {
+    if (req.path.startsWith('/api/')) {
+      return next(); // Let API routes handle themselves
+    }
+    res.status(404).json({
+      message: 'Frontend not built yet. Please run "npm run build" to build the frontend application.',
+      error: 'dist directory not found'
+    });
+  });
+}
 
 // Error handling middleware
 app.use(notFound);
@@ -122,6 +146,15 @@ app.listen(PORT, () => {
     console.log('   • Install MongoDB: https://docs.mongodb.com/manual/installation/');
     console.log('   • Start MongoDB: mongod');
     console.log('   • Or set MONGODB_URI environment variable to a remote MongoDB instance');
+    console.log('');
+  }
+
+  // Check if frontend is built
+  if (!fs.existsSync(distPath)) {
+    console.log('');
+    console.log('🎨 FRONTEND BUILD REQUIRED:');
+    console.log('   Run "npm run build" to build the frontend application');
+    console.log('   This will create the dist directory with the production build');
     console.log('');
   }
 });
