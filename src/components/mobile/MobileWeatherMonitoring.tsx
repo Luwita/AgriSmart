@@ -1,22 +1,5 @@
 import React, { useState } from 'react';
-import { 
-  Cloud, 
-  Sun, 
-  CloudRain, 
-  Thermometer, 
-  Droplets, 
-  Wind,
-  Eye,
-  AlertTriangle,
-  TrendingUp,
-  Calendar,
-  MapPin,
-  Zap,
-  Umbrella,
-  Activity,
-  ChevronRight,
-  Refresh
-} from 'lucide-react';
+import { Cloud, Sun, CloudRain, Thermometer, Droplets, Wind, Eye, AlertTriangle, TrendingUp, Calendar, MapPin, Zap, Umbrella, Activity, ChevronRight, RefreshCw as Refresh } from 'lucide-react';
 import { zambianProvinces } from '../../data/zambianData';
 
 const MobileWeatherMonitoring: React.FC = () => {
