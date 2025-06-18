@@ -26,7 +26,8 @@ import {
   Mail,
   Save,
   RefreshCw,
-  Building
+  Building,
+  Eye
 } from 'lucide-react';
 
 const MobileAdminDashboard: React.FC = () => {
