@@ -20,7 +20,13 @@ import {
   AlertTriangle, 
   Activity, 
   Database, 
-  Server
+  Server,
+  Plus,
+  Phone,
+  Mail,
+  Save,
+  RefreshCw,
+  Building
 } from 'lucide-react';
 
 const MobileAdminDashboard: React.FC = () => {
@@ -28,11 +34,34 @@ const MobileAdminDashboard: React.FC = () => {
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [showAddUserModal, setShowAddUserModal] = useState(false);
+  const [showEditUserModal, setShowEditUserModal] = useState(false);
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [showAddFarmModal, setShowAddFarmModal] = useState(false);
+  const [userFilter, setUserFilter] = useState('all');
+  const [provinceFilter, setProvinceFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // New user form state
+  const [newUser, setNewUser] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    role: 'farmer',
+    location: '',
+    province: 'Lusaka Province',
+    password: '',
+    confirmPassword: ''
+  });
+
+  // Edit user form state
+  const [editUser, setEditUser] = useState<any>({});
 
   // Admin tabs
   const adminTabs = [
     { id: 'dashboard', name: 'Dashboard', icon: TrendingUp },
     { id: 'users', name: 'Users', icon: Users },
+    { id: 'farms', name: 'Farms', icon: Building },
     { id: 'analytics', name: 'Analytics', icon: Activity },
     { id: 'system', name: 'System', icon: Server }
   ];
@@ -88,7 +117,8 @@ const MobileAdminDashboard: React.FC = () => {
       email: 'james@example.com',
       phone: '+260 977 123 456',
       role: 'farmer',
-      location: 'Chongwe, Lusaka Province',
+      location: 'Chongwe',
+      province: 'Lusaka Province',
       joinDate: '2024-01-15',
       status: 'active',
       farms: 2,
@@ -100,7 +130,8 @@ const MobileAdminDashboard: React.FC = () => {
       email: 'mary@example.com',
       phone: '+260 966 789 012',
       role: 'extension_officer',
-      location: 'Lusaka, Lusaka Province',
+      location: 'Lusaka',
+      province: 'Lusaka Province',
       joinDate: '2023-08-20',
       status: 'active',
       expertise: 'Crop diseases, Soil management'
@@ -111,7 +142,8 @@ const MobileAdminDashboard: React.FC = () => {
       email: 'peter@example.com',
       phone: '+260 955 345 678',
       role: 'farmer',
-      location: 'Mkushi, Central Province',
+      location: 'Mkushi',
+      province: 'Central Province',
       joinDate: '2024-02-10',
       status: 'active',
       farms: 1,
@@ -123,7 +155,8 @@ const MobileAdminDashboard: React.FC = () => {
       email: 'grace@example.com',
       phone: '+260 977 456 789',
       role: 'extension_officer',
-      location: 'Kabwe, Central Province',
+      location: 'Kabwe',
+      province: 'Central Province',
       joinDate: '2023-11-05',
       status: 'active',
       expertise: 'Pest management, Crop varieties'
@@ -134,11 +167,46 @@ const MobileAdminDashboard: React.FC = () => {
       email: 'john@example.com',
       phone: '+260 966 234 567',
       role: 'farmer',
-      location: 'Mkushi, Central Province',
+      location: 'Mkushi',
+      province: 'Central Province',
       joinDate: '2024-03-15',
       status: 'active',
       farms: 1,
       crops: 2
+    }
+  ];
+
+  // Sample farms
+  const farms = [
+    {
+      id: 1,
+      name: 'Mwanza Family Farm',
+      owner: 'James Mwanza',
+      location: 'Chongwe District',
+      province: 'Lusaka Province',
+      totalArea: 25,
+      crops: ['Maize', 'Soybeans'],
+      status: 'active'
+    },
+    {
+      id: 2,
+      name: 'Mkushi Block Farm',
+      owner: 'Peter Mulenga',
+      location: 'Mkushi District',
+      province: 'Central Province',
+      totalArea: 120,
+      crops: ['Maize', 'Cotton', 'Groundnuts'],
+      status: 'active'
+    },
+    {
+      id: 3,
+      name: 'Eastern Cooperative',
+      owner: 'Eastern Farmers Cooperative',
+      location: 'Chipata District',
+      province: 'Eastern Province',
+      totalArea: 450,
+      crops: ['Maize', 'Soybeans', 'Sunflower'],
+      status: 'active'
     }
   ];
 
@@ -184,6 +252,92 @@ const MobileAdminDashboard: React.FC = () => {
     setShowUserDetails(true);
   };
 
+  const handleEditUser = (user: any) => {
+    setEditUser({...user});
+    setShowEditUserModal(true);
+    setShowUserDetails(false);
+  };
+
+  const handleDeleteUser = (user: any) => {
+    setSelectedUser(user);
+    setShowDeleteConfirmation(true);
+    setShowUserDetails(false);
+  };
+
+  const handleAddUser = () => {
+    if (newUser.password !== newUser.confirmPassword) {
+      alert("Passwords don't match");
+      return;
+    }
+    
+    // Here you would typically make an API call to add the user
+    console.log('Adding new user:', newUser);
+    
+    // Reset form and close modal
+    setNewUser({
+      name: '',
+      email: '',
+      phone: '',
+      role: 'farmer',
+      location: '',
+      province: 'Lusaka Province',
+      password: '',
+      confirmPassword: ''
+    });
+    setShowAddUserModal(false);
+    
+    // Show success message
+    alert('User added successfully!');
+  };
+
+  const handleUpdateUser = () => {
+    // Here you would typically make an API call to update the user
+    console.log('Updating user:', editUser);
+    
+    // Close modal
+    setShowEditUserModal(false);
+    
+    // Show success message
+    alert('User updated successfully!');
+  };
+
+  const handleConfirmDelete = () => {
+    // Here you would typically make an API call to delete/deactivate the user
+    console.log('Deactivating user:', selectedUser);
+    
+    // Close modal
+    setShowDeleteConfirmation(false);
+    
+    // Show success message
+    alert('User deactivated successfully!');
+  };
+
+  // Filter users based on search term, role, and province
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = searchTerm === '' || 
+      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.location.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    const matchesRole = userFilter === 'all' || user.role === userFilter;
+    const matchesProvince = provinceFilter === 'all' || user.province === provinceFilter;
+    
+    return matchesSearch && matchesRole && matchesProvince;
+  });
+
+  const zambianProvinces = [
+    'Central Province',
+    'Copperbelt Province',
+    'Eastern Province',
+    'Luapula Province',
+    'Lusaka Province',
+    'Muchinga Province',
+    'Northern Province',
+    'North-Western Province',
+    'Southern Province',
+    'Western Province'
+  ];
+
   return (
     <div className="p-4 space-y-4 pb-6">
       {/* Header */}
@@ -214,14 +368,14 @@ const MobileAdminDashboard: React.FC = () => {
 
       {/* Admin Tab Navigation */}
       <div className="bg-white rounded-xl overflow-hidden shadow-sm border border-gray-200">
-        <div className="flex border-b border-gray-200">
+        <div className="flex border-b border-gray-200 overflow-x-auto">
           {adminTabs.map((tab) => {
             const Icon = tab.icon;
             return (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-3 text-center text-xs font-medium ${
+                className={`flex-1 py-3 text-center text-xs font-medium whitespace-nowrap ${
                   activeTab === tab.id
                     ? 'border-b-2 border-purple-500 text-purple-600'
                     : 'text-gray-500'
@@ -340,6 +494,15 @@ const MobileAdminDashboard: React.FC = () => {
 
           {activeTab === 'users' && (
             <div className="space-y-4">
+              {/* Add User Button */}
+              <button 
+                onClick={() => setShowAddUserModal(true)}
+                className="w-full bg-purple-600 text-white py-3 px-4 rounded-xl hover:bg-purple-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New User</span>
+              </button>
+
               {/* User Filters */}
               <div className="flex items-center space-x-2">
                 <button
@@ -354,6 +517,8 @@ const MobileAdminDashboard: React.FC = () => {
                   <input
                     type="text"
                     placeholder="Search users..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
                   />
                 </div>
@@ -365,7 +530,11 @@ const MobileAdminDashboard: React.FC = () => {
                   <div className="space-y-3">
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Role</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                      <select 
+                        value={userFilter}
+                        onChange={(e) => setUserFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
                         <option value="all">All Roles</option>
                         <option value="farmer">Farmers</option>
                         <option value="extension_officer">Extension Officers</option>
@@ -374,21 +543,15 @@ const MobileAdminDashboard: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">Province</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                      <select 
+                        value={provinceFilter}
+                        onChange={(e) => setProvinceFilter(e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                      >
                         <option value="all">All Provinces</option>
-                        <option value="Lusaka Province">Lusaka Province</option>
-                        <option value="Central Province">Central Province</option>
-                        <option value="Eastern Province">Eastern Province</option>
-                        <option value="Southern Province">Southern Province</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-xs font-medium text-gray-700 mb-1">Status</label>
-                      <select className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                        <option value="all">All Statuses</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="pending">Pending</option>
+                        {zambianProvinces.map(province => (
+                          <option key={province} value={province}>{province}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
@@ -397,42 +560,129 @@ const MobileAdminDashboard: React.FC = () => {
 
               {/* User List */}
               <div className="space-y-3">
-                {users.map((user) => (
-                  <div 
-                    key={user.id} 
-                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
-                    onClick={() => handleViewUser(user)}
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900">{user.name}</p>
-                          <p className="text-xs text-gray-600">{user.email}</p>
-                          <div className="flex items-center text-xs text-gray-500 mt-1">
-                            <MapPin className="w-3 h-3 mr-1" />
-                            <span>{user.location}</span>
+                {filteredUsers.length > 0 ? (
+                  filteredUsers.map((user) => (
+                    <div 
+                      key={user.id} 
+                      className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                      onClick={() => handleViewUser(user)}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900">{user.name}</p>
+                            <p className="text-xs text-gray-600">{user.email}</p>
+                            <div className="flex items-center text-xs text-gray-500 mt-1">
+                              <MapPin className="w-3 h-3 mr-1" />
+                              <span>{user.location}, {user.province}</span>
+                            </div>
                           </div>
                         </div>
+                        <div className="flex flex-col items-end">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
+                            {user.role.replace('_', ' ')}
+                          </span>
+                          <span className={`mt-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
+                            {user.status}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex flex-col items-end">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(user.role)}`}>
-                          {user.role.replace('_', ' ')}
-                        </span>
-                        <span className={`mt-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(user.status)}`}>
-                          {user.status}
+                      
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          <span>Joined: {new Date(user.joinDate).toLocaleDateString()}</span>
+                        </div>
+                        <ChevronRight className="w-4 h-4" />
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bg-gray-50 rounded-xl p-6 text-center">
+                    <p className="text-gray-500">No users found matching your filters</p>
+                    <button 
+                      onClick={() => {
+                        setSearchTerm('');
+                        setUserFilter('all');
+                        setProvinceFilter('all');
+                      }}
+                      className="mt-2 text-purple-600 text-sm font-medium"
+                    >
+                      Clear filters
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'farms' && (
+            <div className="space-y-4">
+              {/* Add Farm Button */}
+              <button 
+                onClick={() => setShowAddFarmModal(true)}
+                className="w-full bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Farm</span>
+              </button>
+
+              {/* Farm Search */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <input
+                  type="text"
+                  placeholder="Search farms..."
+                  className="w-full pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                />
+              </div>
+
+              {/* Farm List */}
+              <div className="space-y-3">
+                {farms.map((farm) => (
+                  <div 
+                    key={farm.id} 
+                    className="bg-white rounded-xl shadow-sm border border-gray-200 p-4"
+                  >
+                    <div className="flex items-start justify-between mb-3">
+                      <div>
+                        <h4 className="font-medium text-gray-900">{farm.name}</h4>
+                        <p className="text-xs text-gray-600">Owner: {farm.owner}</p>
+                        <div className="flex items-center text-xs text-gray-500 mt-1">
+                          <MapPin className="w-3 h-3 mr-1" />
+                          <span>{farm.location}, {farm.province}</span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-semibold text-blue-600">{farm.totalArea} ha</p>
+                        <span className={`mt-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(farm.status)}`}>
+                          {farm.status}
                         </span>
                       </div>
                     </div>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center">
-                        <Calendar className="w-3 h-3 mr-1" />
-                        <span>Joined: {new Date(user.joinDate).toLocaleDateString()}</span>
-                      </div>
-                      <ChevronRight className="w-4 h-4" />
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {farm.crops.map((crop, index) => (
+                        <span key={index} className="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs">
+                          {crop}
+                        </span>
+                      ))}
+                    </div>
+                    
+                    <div className="flex space-x-2">
+                      <button className="flex-1 bg-blue-600 text-white py-2 px-3 rounded-lg text-xs font-medium hover:bg-blue-700 transition-colors flex items-center justify-center space-x-1">
+                        <Eye className="w-3 h-3" />
+                        <span>View Details</span>
+                      </button>
+                      <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button className="p-2 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -513,7 +763,12 @@ const MobileAdminDashboard: React.FC = () => {
             <div className="space-y-4">
               {/* System Health */}
               <div className="bg-white rounded-xl p-4 border border-gray-200 shadow-sm">
-                <h3 className="font-medium text-gray-900 mb-3 text-sm">System Health</h3>
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-medium text-gray-900 text-sm">System Health</h3>
+                  <button className="p-1.5 bg-gray-100 rounded-lg text-gray-600">
+                    <RefreshCw className="w-4 h-4" />
+                  </button>
+                </div>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
                     <div className="flex items-center space-x-3">
@@ -641,7 +896,7 @@ const MobileAdminDashboard: React.FC = () => {
                   </div>
                   <div className="flex items-center text-xs text-gray-500 mt-1">
                     <MapPin className="w-3 h-3 mr-1" />
-                    <span>{selectedUser.location}</span>
+                    <span>{selectedUser.location}, {selectedUser.province}</span>
                   </div>
                   <div className="flex items-center space-x-2 mt-2">
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRoleColor(selectedUser.role)}`}>
@@ -685,13 +940,411 @@ const MobileAdminDashboard: React.FC = () => {
               
               {/* Admin Actions */}
               <div className="flex space-x-3 pt-4">
-                <button className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => handleEditUser(selectedUser)}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                >
                   <Edit className="w-4 h-4" />
                   <span>Edit User</span>
                 </button>
-                <button className="flex-1 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center space-x-2">
+                <button 
+                  onClick={() => handleDeleteUser(selectedUser)}
+                  className="flex-1 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+                >
                   <Trash2 className="w-4 h-4" />
                   <span>Deactivate</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add User Modal */}
+      {showAddUserModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
+          <div className="bg-white rounded-t-2xl mt-auto max-h-[90vh] overflow-y-auto w-full">
+            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Add New User</h3>
+              <button 
+                onClick={() => setShowAddUserModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input 
+                  type="text"
+                  value={newUser.name}
+                  onChange={(e) => setNewUser({...newUser, name: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Enter full name"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input 
+                  type="email"
+                  value={newUser.email}
+                  onChange={(e) => setNewUser({...newUser, email: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Enter email address"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input 
+                  type="tel"
+                  value={newUser.phone}
+                  onChange={(e) => setNewUser({...newUser, phone: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="e.g., +260 977 123 456"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <select 
+                  value={newUser.role}
+                  onChange={(e) => setNewUser({...newUser, role: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  required
+                >
+                  <option value="farmer">Farmer</option>
+                  <option value="extension_officer">Extension Officer</option>
+                  <option value="cooperative">Cooperative</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input 
+                    type="text"
+                    value={newUser.location}
+                    onChange={(e) => setNewUser({...newUser, location: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    placeholder="e.g., Chongwe"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                  <select 
+                    value={newUser.province}
+                    onChange={(e) => setNewUser({...newUser, province: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                    required
+                  >
+                    {zambianProvinces.map(province => (
+                      <option key={province} value={province}>{province}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <input 
+                  type="password"
+                  value={newUser.password}
+                  onChange={(e) => setNewUser({...newUser, password: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Enter password"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <input 
+                  type="password"
+                  value={newUser.confirmPassword}
+                  onChange={(e) => setNewUser({...newUser, confirmPassword: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                  placeholder="Confirm password"
+                  required
+                />
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button 
+                  onClick={() => setShowAddUserModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleAddUser}
+                  className="flex-1 bg-purple-600 text-white py-3 px-4 rounded-xl hover:bg-purple-700 transition-colors"
+                >
+                  Add User
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {showEditUserModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
+          <div className="bg-white rounded-t-2xl mt-auto max-h-[90vh] overflow-y-auto w-full">
+            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Edit User</h3>
+              <button 
+                onClick={() => setShowEditUserModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                <input 
+                  type="text"
+                  value={editUser.name || ''}
+                  onChange={(e) => setEditUser({...editUser, name: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input 
+                  type="email"
+                  value={editUser.email || ''}
+                  onChange={(e) => setEditUser({...editUser, email: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                <input 
+                  type="tel"
+                  value={editUser.phone || ''}
+                  onChange={(e) => setEditUser({...editUser, phone: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                <select 
+                  value={editUser.role || ''}
+                  onChange={(e) => setEditUser({...editUser, role: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="farmer">Farmer</option>
+                  <option value="extension_officer">Extension Officer</option>
+                  <option value="cooperative">Cooperative</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input 
+                    type="text"
+                    value={editUser.location || ''}
+                    onChange={(e) => setEditUser({...editUser, location: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                  <select 
+                    value={editUser.province || ''}
+                    onChange={(e) => setEditUser({...editUser, province: e.target.value})}
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    {zambianProvinces.map(province => (
+                      <option key={province} value={province}>{province}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                <select 
+                  value={editUser.status || ''}
+                  onChange={(e) => setEditUser({...editUser, status: e.target.value})}
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                >
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                  <option value="pending">Pending</option>
+                </select>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button 
+                  onClick={() => setShowEditUserModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleUpdateUser}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save Changes</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmation && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full p-6">
+            <div className="text-center mb-6">
+              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Deactivate User</h3>
+              <p className="text-sm text-gray-600">
+                Are you sure you want to deactivate {selectedUser.name}? This action can be reversed later.
+              </p>
+            </div>
+            
+            <div className="flex space-x-3">
+              <button 
+                onClick={() => setShowDeleteConfirmation(false)}
+                className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button 
+                onClick={handleConfirmDelete}
+                className="flex-1 bg-red-600 text-white py-3 px-4 rounded-xl hover:bg-red-700 transition-colors"
+              >
+                Deactivate
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Farm Modal */}
+      {showAddFarmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex flex-col">
+          <div className="bg-white rounded-t-2xl mt-auto max-h-[90vh] overflow-y-auto w-full">
+            <div className="sticky top-0 bg-white px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Add New Farm</h3>
+              <button 
+                onClick={() => setShowAddFarmModal(false)}
+                className="p-2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-4 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Farm Name</label>
+                <input 
+                  type="text"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., Mwanza Family Farm"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Owner</label>
+                <select 
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  required
+                >
+                  <option value="">Select farm owner</option>
+                  {users.filter(user => user.role === 'farmer').map(user => (
+                    <option key={user.id} value={user.id}>{user.name}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                  <input 
+                    type="text"
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="e.g., Chongwe District"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Province</label>
+                  <select 
+                    className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    required
+                  >
+                    {zambianProvinces.map(province => (
+                      <option key={province} value={province}>{province}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Total Area (hectares)</label>
+                <input 
+                  type="number"
+                  className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="e.g., 25"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Main Crops</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {['Maize', 'Soybeans', 'Groundnuts', 'Sunflower', 'Cotton', 'Tobacco'].map(crop => (
+                    <label key={crop} className="flex items-center space-x-2">
+                      <input 
+                        type="checkbox" 
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm text-gray-700">{crop}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button 
+                  onClick={() => setShowAddFarmModal(false)}
+                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    alert('Farm added successfully!');
+                    setShowAddFarmModal(false);
+                  }}
+                  className="flex-1 bg-blue-600 text-white py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors"
+                >
+                  Add Farm
                 </button>
               </div>
             </div>
