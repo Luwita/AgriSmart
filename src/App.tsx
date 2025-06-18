@@ -6,19 +6,20 @@ import MobileCropManagement from './components/mobile/MobileCropManagement';
 import MobileWeatherMonitoring from './components/mobile/MobileWeatherMonitoring';
 import MobileMarketAnalysis from './components/mobile/MobileMarketAnalysis';
 import MobileIoTDevices from './components/mobile/MobileIoTDevices';
-import ResourceOptimization from './components/ResourceOptimization';
-import SustainablePractices from './components/SustainablePractices';
-import FinancialManagement from './components/FinancialManagement';
-import InventoryManagement from './components/InventoryManagement';
-import CommunityForum from './components/CommunityForum';
-import Analytics from './components/Analytics';
+import MobileResourceOptimization from './components/mobile/MobileResourceOptimization';
+import MobileSustainablePractices from './components/mobile/MobileSustainablePractices';
+import MobileFinancialManagement from './components/mobile/MobileFinancialManagement';
+import MobileInventoryManagement from './components/mobile/MobileInventoryManagement';
+import MobileCommunityForum from './components/mobile/MobileCommunityForum';
+import MobileAnalytics from './components/mobile/MobileAnalytics';
 import MobileUserProfile from './components/mobile/MobileUserProfile';
 import MobileAuthentication from './components/mobile/MobileAuthentication';
+import MobileAdminDashboard from './components/mobile/MobileAdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
-type ActiveSection = 'dashboard' | 'crops' | 'weather' | 'market' | 'iot' | 'resources' | 'sustainability' | 'financial' | 'inventory' | 'community' | 'analytics' | 'profile';
+type ActiveSection = 'dashboard' | 'crops' | 'weather' | 'market' | 'iot' | 'resources' | 'sustainability' | 'financial' | 'inventory' | 'community' | 'analytics' | 'profile' | 'admin';
 
 function AppContent() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
@@ -59,19 +60,21 @@ function AppContent() {
       case 'iot':
         return <MobileIoTDevices />;
       case 'resources':
-        return <ResourceOptimization />;
+        return <MobileResourceOptimization />;
       case 'sustainability':
-        return <SustainablePractices />;
+        return <MobileSustainablePractices />;
       case 'financial':
-        return <FinancialManagement />;
+        return <MobileFinancialManagement />;
       case 'inventory':
-        return <InventoryManagement />;
+        return <MobileInventoryManagement />;
       case 'community':
-        return <CommunityForum />;
+        return <MobileCommunityForum />;
       case 'analytics':
-        return <Analytics />;
+        return <MobileAnalytics />;
       case 'profile':
         return <MobileUserProfile />;
+      case 'admin':
+        return <MobileAdminDashboard />;
       default:
         return <MobileDashboard />;
     }
