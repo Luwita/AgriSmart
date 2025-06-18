@@ -6,12 +6,12 @@ import MobileCropManagement from './components/mobile/MobileCropManagement';
 import MobileWeatherMonitoring from './components/mobile/MobileWeatherMonitoring';
 import MobileMarketAnalysis from './components/mobile/MobileMarketAnalysis';
 import MobileIoTDevices from './components/mobile/MobileIoTDevices';
-import MobileResourceOptimization from './components/mobile/MobileResourceOptimization';
-import MobileSustainablePractices from './components/mobile/MobileSustainablePractices';
-import MobileFinancialManagement from './components/mobile/MobileFinancialManagement';
-import MobileInventoryManagement from './components/mobile/MobileInventoryManagement';
-import MobileCommunityForum from './components/mobile/MobileCommunityForum';
-import MobileAnalytics from './components/mobile/MobileAnalytics';
+import ResourceOptimization from './components/ResourceOptimization';
+import SustainablePractices from './components/SustainablePractices';
+import FinancialManagement from './components/FinancialManagement';
+import InventoryManagement from './components/InventoryManagement';
+import CommunityForum from './components/CommunityForum';
+import Analytics from './components/Analytics';
 import MobileUserProfile from './components/mobile/MobileUserProfile';
 import MobileAuthentication from './components/mobile/MobileAuthentication';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
@@ -59,17 +59,17 @@ function AppContent() {
       case 'iot':
         return <MobileIoTDevices />;
       case 'resources':
-        return <MobileResourceOptimization />;
+        return <ResourceOptimization />;
       case 'sustainability':
-        return <MobileSustainablePractices />;
+        return <SustainablePractices />;
       case 'financial':
-        return <MobileFinancialManagement />;
+        return <FinancialManagement />;
       case 'inventory':
-        return <MobileInventoryManagement />;
+        return <InventoryManagement />;
       case 'community':
-        return <MobileCommunityForum />;
+        return <CommunityForum />;
       case 'analytics':
-        return <MobileAnalytics />;
+        return <Analytics />;
       case 'profile':
         return <MobileUserProfile />;
       default:
