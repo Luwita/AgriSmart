@@ -1,96 +1,112 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Sidebar from './components/Sidebar';
-import Dashboard from './components/Dashboard';
-import CropManagement from './components/CropManagement';
-import WeatherMonitoring from './components/WeatherMonitoring';
-import MarketAnalysis from './components/MarketAnalysis';
-import IoTDevices from './components/IoTDevices';
-import ResourceOptimization from './components/ResourceOptimization';
-import SustainablePractices from './components/SustainablePractices';
-import FinancialManagement from './components/FinancialManagement';
-import InventoryManagement from './components/InventoryManagement';
-import CommunityForum from './components/CommunityForum';
-import Analytics from './components/Analytics';
-import UserProfile from './components/UserProfile';
-import AdminDashboard from './components/AdminDashboard';
-import Authentication from './components/Authentication';
+import MobileNavigation from './components/mobile/MobileNavigation';
+import MobileDashboard from './components/mobile/MobileDashboard';
+import MobileCropManagement from './components/mobile/MobileCropManagement';
+import MobileWeatherMonitoring from './components/mobile/MobileWeatherMonitoring';
+import MobileMarketAnalysis from './components/mobile/MobileMarketAnalysis';
+import MobileIoTDevices from './components/mobile/MobileIoTDevices';
+import MobileResourceOptimization from './components/mobile/MobileResourceOptimization';
+import MobileSustainablePractices from './components/mobile/MobileSustainablePractices';
+import MobileFinancialManagement from './components/mobile/MobileFinancialManagement';
+import MobileInventoryManagement from './components/mobile/MobileInventoryManagement';
+import MobileCommunityForum from './components/mobile/MobileCommunityForum';
+import MobileAnalytics from './components/mobile/MobileAnalytics';
+import MobileUserProfile from './components/mobile/MobileUserProfile';
+import MobileAuthentication from './components/mobile/MobileAuthentication';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 
-type ActiveSection = 'dashboard' | 'crops' | 'weather' | 'market' | 'iot' | 'resources' | 'sustainability' | 'financial' | 'inventory' | 'community' | 'analytics' | 'profile' | 'admin';
+type ActiveSection = 'dashboard' | 'crops' | 'weather' | 'market' | 'iot' | 'resources' | 'sustainability' | 'financial' | 'inventory' | 'community' | 'analytics' | 'profile';
 
 function AppContent() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { user, isAuthenticated } = useAuth();
 
+  // Mobile-specific viewport handling
+  useEffect(() => {
+    // Set viewport height for mobile browsers
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    };
+
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+
+    return () => {
+      window.removeEventListener('resize', setVH);
+      window.removeEventListener('orientationchange', setVH);
+    };
+  }, []);
+
   if (!isAuthenticated) {
-    return <Authentication />;
+    return <MobileAuthentication />;
   }
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <Dashboard />;
+        return <MobileDashboard />;
       case 'crops':
-        return <CropManagement />;
+        return <MobileCropManagement />;
       case 'weather':
-        return <WeatherMonitoring />;
+        return <MobileWeatherMonitoring />;
       case 'market':
-        return <MarketAnalysis />;
+        return <MobileMarketAnalysis />;
       case 'iot':
-        return <IoTDevices />;
+        return <MobileIoTDevices />;
       case 'resources':
-        return <ResourceOptimization />;
+        return <MobileResourceOptimization />;
       case 'sustainability':
-        return <SustainablePractices />;
+        return <MobileSustainablePractices />;
       case 'financial':
-        return <FinancialManagement />;
+        return <MobileFinancialManagement />;
       case 'inventory':
-        return <InventoryManagement />;
+        return <MobileInventoryManagement />;
       case 'community':
-        return <CommunityForum />;
+        return <MobileCommunityForum />;
       case 'analytics':
-        return <Analytics />;
+        return <MobileAnalytics />;
       case 'profile':
-        return <UserProfile />;
-      case 'admin':
-        return <AdminDashboard />;
+        return <MobileUserProfile />;
       default:
-        return <Dashboard />;
+        return <MobileDashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <Sidebar
+    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
+      {/* Mobile Header */}
+      <header className="bg-emerald-600 text-white px-4 py-3 flex items-center justify-between shadow-lg">
+        <div className="flex items-center space-x-2">
+          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+            <span className="text-emerald-600 font-bold text-sm">🌱</span>
+          </div>
+          <h1 className="text-lg font-bold">AgriSmart</h1>
+        </div>
+        <div className="flex items-center space-x-2">
+          <span className="text-xs bg-emerald-500 px-2 py-1 rounded-full">🇿🇲</span>
+          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+            <span className="text-white text-sm font-medium">
+              {user?.name?.charAt(0) || 'U'}
+            </span>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 overflow-auto pb-20">
+        {renderActiveSection()}
+      </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileNavigation
         activeSection={activeSection}
         setActiveSection={setActiveSection}
-        isMobileMenuOpen={isMobileMenuOpen}
-        setIsMobileMenuOpen={setIsMobileMenuOpen}
       />
-      
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white shadow-sm border-b border-gray-200 lg:hidden">
-          <div className="px-4 py-3 flex items-center justify-between">
-            <h1 className="text-xl font-bold text-emerald-600">AgriSmart</h1>
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 rounded-md text-gray-600 hover:text-emerald-600 hover:bg-gray-100"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
-          </div>
-        </header>
-
-        <main className="flex-1 overflow-auto">
-          {renderActiveSection()}
-        </main>
-      </div>
     </div>
   );
 }
