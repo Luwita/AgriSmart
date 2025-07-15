@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import MobileNavigation from './components/mobile/MobileNavigation';
-import MobileDashboard from './components/mobile/MobileDashboard';
-import MobileCropManagement from './components/mobile/MobileCropManagement';
-import MobileWeatherMonitoring from './components/mobile/MobileWeatherMonitoring';
-import MobileMarketAnalysis from './components/mobile/MobileMarketAnalysis';
-import MobileIoTDevices from './components/mobile/MobileIoTDevices';
-import MobileResourceOptimization from './components/mobile/MobileResourceOptimization';
-import MobileSustainablePractices from './components/mobile/MobileSustainablePractices';
-import MobileFinancialManagement from './components/mobile/MobileFinancialManagement';
-import MobileInventoryManagement from './components/mobile/MobileInventoryManagement';
-import MobileCommunityForum from './components/mobile/MobileCommunityForum';
-import MobileAnalytics from './components/mobile/MobileAnalytics';
-import MobileUserProfile from './components/mobile/MobileUserProfile';
-import MobileAuthentication from './components/mobile/MobileAuthentication';
-import MobileAdminDashboard from './components/mobile/MobileAdminDashboard';
+import Sidebar from './components/Sidebar';
+import Dashboard from './components/Dashboard';
+import CropManagement from './components/CropManagement';
+import WeatherMonitoring from './components/WeatherMonitoring';
+import MarketAnalysis from './components/MarketAnalysis';
+import IoTDevices from './components/IoTDevices';
+import ResourceOptimization from './components/ResourceOptimization';
+import SustainablePractices from './components/SustainablePractices';
+import FinancialManagement from './components/FinancialManagement';
+import InventoryManagement from './components/InventoryManagement';
+import CommunityForum from './components/CommunityForum';
+import Analytics from './components/Analytics';
+import UserProfile from './components/UserProfile';
+import Authentication from './components/Authentication';
+import AdminDashboard from './components/AdminDashboard';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { DataProvider } from './contexts/DataContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -25,91 +25,58 @@ function AppContent() {
   const [activeSection, setActiveSection] = useState<ActiveSection>('dashboard');
   const { user, isAuthenticated } = useAuth();
 
-  // Mobile-specific viewport handling
-  useEffect(() => {
-    // Set viewport height for mobile browsers
-    const setVH = () => {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    };
-
-    setVH();
-    window.addEventListener('resize', setVH);
-    window.addEventListener('orientationchange', setVH);
-
-    return () => {
-      window.removeEventListener('resize', setVH);
-      window.removeEventListener('orientationchange', setVH);
-    };
-  }, []);
-
   if (!isAuthenticated) {
-    return <MobileAuthentication />;
+    return <Authentication />;
   }
 
   const renderActiveSection = () => {
     switch (activeSection) {
       case 'dashboard':
-        return <MobileDashboard />;
+        return <Dashboard />;
       case 'crops':
-        return <MobileCropManagement />;
+        return <CropManagement />;
       case 'weather':
-        return <MobileWeatherMonitoring />;
+        return <WeatherMonitoring />;
       case 'market':
-        return <MobileMarketAnalysis />;
+        return <MarketAnalysis />;
       case 'iot':
-        return <MobileIoTDevices />;
+        return <IoTDevices />;
       case 'resources':
-        return <MobileResourceOptimization />;
+        return <ResourceOptimization />;
       case 'sustainability':
-        return <MobileSustainablePractices />;
+        return <SustainablePractices />;
       case 'financial':
-        return <MobileFinancialManagement />;
+        return <FinancialManagement />;
       case 'inventory':
-        return <MobileInventoryManagement />;
+        return <InventoryManagement />;
       case 'community':
-        return <MobileCommunityForum />;
+        return <CommunityForum />;
       case 'analytics':
-        return <MobileAnalytics />;
+        return <Analytics />;
       case 'profile':
-        return <MobileUserProfile />;
+        return <UserProfile />;
       case 'admin':
-        return <MobileAdminDashboard />;
+        return <AdminDashboard />;
       default:
-        return <MobileDashboard />;
+        return <Dashboard />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col" style={{ minHeight: 'calc(var(--vh, 1vh) * 100)' }}>
-      {/* Mobile Header */}
-      <header className="bg-emerald-600 text-white px-4 py-3 flex items-center justify-between shadow-lg">
-        <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
-            <span className="text-emerald-600 font-bold text-sm">🌱</span>
-          </div>
-          <h1 className="text-lg font-bold">AgriSmart</h1>
-        </div>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs bg-emerald-500 px-2 py-1 rounded-full">🇿🇲</span>
-          <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-            <span className="text-white text-sm font-medium">
-              {user?.name?.charAt(0) || 'U'}
-            </span>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto pb-20">
-        {renderActiveSection()}
-      </main>
-
-      {/* Mobile Bottom Navigation */}
-      <MobileNavigation
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Desktop Sidebar */}
+      <Sidebar
         activeSection={activeSection}
         setActiveSection={setActiveSection}
+        user={user}
       />
+
+      {/* Main Content */}
+      <main className="flex-1 ml-64 p-8">
+        <div className="max-w-7xl mx-auto">
+          {renderActiveSection()}
+        </div>
+      </main>
     </div>
   );
 }
